@@ -32,22 +32,24 @@ class PeopleEndpointTestCase(TestCase):
             content_type='application/json')
         self.assertEqual(response.status_code, 400)
 
-        # POSTing with the last_name missing
-        data = minimum_required_data.copy()
-        data.pop("last_name")
-        response = self.client.post(
-            url,
-            data = data,
-            content_type="application/json"
+        missing_subtests = (
+            # A tuple of (field_name, subtest_description)
+            ('first_name', 'Missing the first_name field'),
+            ('last_name', 'Missing the last_name field'),
+            ('address', 'Missing the address field'),
         )
-        self.assertEqual(response.status_code == 400)
 
-        # POSTing with the address missing
-        data = minimum_required_data.copy()
-        data.pop('address')
-        response = self.client.post(
-            url,
-            data=data,
-            content_type="application/json"
-        )
-        self.assertEqual(response.status_code, 400)
+        for field_name, subtest_description in missing_subtests:
+            with self.subTest(subtest_description):
+                # remove the missing field from the minimum_required_data
+                data = minimum_required_data.copy()
+                data.pop(field_name)
+
+                # POSTing with the missing field name
+                response = self.client.post(
+                    url,
+                    data=data,
+                    content_type='application/json'
+                )
+                self.assertEqual(response.status_code, 400)
+
